@@ -87,4 +87,24 @@ export default class UserController {
             });
         }
     }
+
+    static async getSkillsByUserId(req, res) {
+        try {
+            const { id } = req.params;
+
+            const data = await UserService.getSkillsByUserId(Number(id));
+
+            return res.status(200).json({
+                status: "success",
+                message: "User skills retrieved successfully",
+                data
+            });
+
+        } catch (error) {
+            return res.status(error.status || 500).json({
+                status: "error",
+                message: error.message
+            });
+        }
+    }
 }

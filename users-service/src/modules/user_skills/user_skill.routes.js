@@ -10,4 +10,6 @@ router.patch("/:user_id/:skill_id/decrease", UserSkillController.decreaseExperie
 router.patch("/:user_id/:skill_id/increase", UserSkillController.addExperience);
 router.delete("/:user_id/:skill_id", UserSkillController.delete);
 
+
+
 export default router;

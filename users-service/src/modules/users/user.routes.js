@@ -13,7 +13,7 @@ router.get("/:id", UserValidator.validateGetById, UserController.getById);
 router.post("/", UserValidator.validateCreate, UserController.create);
 router.put("/:id", UserValidator.validateUpdate, UserController.update);
 router.delete("/:id", UserValidator.validateDelete, UserController.delete);
-
+router.get("/:id/skills", UserController.getSkillsByUserId);
 
 
 export default router;
