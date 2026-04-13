@@ -24,31 +24,45 @@ export default class OrderService {
     static async create(data) {
         const { user_id, skill_id, pts_assigned } = data;
 
-        const userRes = await fetch(`${USERS_SERVICE}/users/${user_id}`);
-        if (!userRes.ok) {
-            const error = new Error("User not found");
-            error.status = 404;
-            throw error;
-        }
-
-        const skillRes = await fetch(`${SKILLS_SERVICE}/skills/${skill_id}`);
-        if (!skillRes.ok) {
-            const error = new Error("Skill not found");
-            error.status = 404;
-            throw error;
-        }
-
-        const skillData = await skillRes.json();
-
-        if (skillData.data.available_pts < pts_assigned) {
-            const error = new Error("Not enough available points");
-            error.status = 400;
-            throw error;
-        }
-
         let pointsDecreased = false;
 
         try {
+            const userRes = await fetch(`${USERS_SERVICE}/users/${user_id}`);
+
+            if (!userRes.ok) {
+                if (userRes.status === 404) {
+                    const error = new Error("User not found");
+                    error.status = 404;
+                    throw error;
+                }
+
+                const error = new Error("Users service is not available");
+                error.status = 503;
+                throw error;
+            }
+
+            const skillRes = await fetch(`${SKILLS_SERVICE}/skills/${skill_id}`);
+
+            if (!skillRes.ok) {
+                if (skillRes.status === 404) {
+                    const error = new Error("Skill not found");
+                    error.status = 404;
+                    throw error;
+                }
+
+                const error = new Error("Skills service is not available");
+                error.status = 503;
+                throw error;
+            }
+
+            const skillData = await skillRes.json();
+
+            if (skillData.data.available_pts < pts_assigned) {
+                const error = new Error("Not enough available points");
+                error.status = 400;
+                throw error;
+            }
+
             const decreaseRes = await fetch(
                 `${SKILLS_SERVICE}/skills/${skill_id}/decrease`,
                 {
@@ -60,11 +74,25 @@ export default class OrderService {
 
             if (!decreaseRes.ok) {
                 const error = new Error("Failed to decrease skill points");
-                error.status = 500;
+                error.status = decreaseRes.status >= 500 ? 503 : 400;
                 throw error;
             }
 
             pointsDecreased = true;
+
+            const userSkillRes = await fetch(
+                `${USERS_SERVICE}/users/skills/${user_id}/${skill_id}/increase`,
+                {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ amount: pts_assigned })
+                }
+            );
+            if (!userSkillRes.ok) {
+                const error = new Error("Failed to assign skill experience to user");
+                error.status = userSkillRes.status >= 500 ? 503 : 400;
+                throw error;
+            }
 
             return await OrderModel.create({
                 user_id,
