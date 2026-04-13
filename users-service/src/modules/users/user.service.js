@@ -1,6 +1,6 @@
 import pool from "../../config/db.js";
 import User from "./user.model.js";
-import UserDBValidator from "./user.dbvalidator.js";
+import UserDBValidator from "../../shared/db.validator/user.db.validator.js";
 
 export default class UserService {
     static async getAll(client = pool) {

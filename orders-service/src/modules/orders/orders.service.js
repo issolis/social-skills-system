@@ -14,7 +14,7 @@ export default class OrderService {
 
         if (!order) {
             const error = new Error("Order not found");
-            error.status = 404; 
+            error.status = 404;
             throw error;
         }
 
@@ -46,27 +46,51 @@ export default class OrderService {
             throw error;
         }
 
-        const decreaseRes = await fetch(
-            `${SKILLS_SERVICE}/skills/${skill_id}/decrease`,
-            {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ points: pts_assigned })
-            }
-        );
+        let pointsDecreased = false;
 
-        if (!decreaseRes.ok) {
-            const error = new Error("Failed to decrease skill points");
-            error.status = 500;
+        try {
+            const decreaseRes = await fetch(
+                `${SKILLS_SERVICE}/skills/${skill_id}/decrease`,
+                {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ points: pts_assigned })
+                }
+            );
+
+            if (!decreaseRes.ok) {
+                const error = new Error("Failed to decrease skill points");
+                error.status = 500;
+                throw error;
+            }
+
+            pointsDecreased = true;
+
+            return await OrderModel.create({
+                user_id,
+                skill_id,
+                pts_assigned,
+                status: "completed"
+            });
+
+        } catch (error) {
+            if (pointsDecreased) {
+                try {
+                    await fetch(
+                        `${SKILLS_SERVICE}/skills/${skill_id}/increase`,
+                        {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ points: pts_assigned })
+                        }
+                    );
+                } catch (rollbackError) {
+                    console.error("Rollback failed:", rollbackError.message);
+                }
+            }
+
             throw error;
         }
-
-        return await OrderModel.create({
-            user_id,
-            skill_id,
-            pts_assigned,
-            status: "completed"
-        });
     }
 
     static async delete(id) {
