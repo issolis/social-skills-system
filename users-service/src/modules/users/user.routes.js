@@ -1,10 +1,12 @@
 import { Router } from "express";
 import UserController from "./user.controller.js";
 import UserValidator from "./user.validator.js";
+import userSkillRoutes from "../user_skills/user_skill.routes.js";
+
 
 const router = Router();
 
-
+router.use("/skills", userSkillRoutes);
 
 router.get("/", UserController.getAll);
 router.get("/:id", UserValidator.validateGetById, UserController.getById);
