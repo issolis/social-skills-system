@@ -1,7 +1,7 @@
 import OrderModel from "./order.model.js";
 
-const USERS_SERVICE = "http://localhost:3001";
-const SKILLS_SERVICE = "http://localhost:3002";
+const USERS_SERVICE = process.env.USERS_SERVICE_URL || "http://localhost:3001";
+const SKILLS_SERVICE = process.env.SKILLS_SERVICE_URL || "http://localhost:3002";
 
 export default class OrderService {
 
