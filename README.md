@@ -44,6 +44,10 @@ Verificar que los 3 servicios digan `Running`:
 ```powershell
 kubectl get pods
 ```
+Para actualizar la información debido a cambios en los .yaml usar este comando:
+```powershell
+kubectl apply -f ./social-skills-system/k8s/
+```
 
 ### 6. Exponer la API (LoadBalancer)
 Abra una **NUEVA terminal** y ejecuta este comando para crear un puente hacia tu computadora (hay que dejar la terminal abierta):
@@ -57,6 +61,12 @@ En una terminal distinta a la de minikube tunnel:
 kubectl get services
 ```
 
-### 8. Probar el Sistema (CUANDO SE AGREGUE ALGUNA BASE DE DATOS)
+### 8. Pasar la base de datos a kubernetes 
+Con el .env ubicado en el servicio:
+```powershell
+kubectl create configmap orders-config --from-env-file=orders-service/.env
+```
+
+### 9. Probar el Sistema (CUANDO SE AGREGUE ALGUNA BASE DE DATOS)
 Hacer peticiones desde Postman o el navegador usando la IP local.
 - **Ruta principal de Pedidos:** `http://127.0.0.1:3003/orders` o `http://localhost:3003/orders`
