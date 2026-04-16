@@ -19,13 +19,14 @@ spec:
         ports:
         - containerPort: 3003
         env:
-        - name: PORT
-          value: "3003"
         # VARIABLES CLAVE PARA LA COMUNICACIÓN ENTRE KUBERNETES DNS
         - name: USERS_SERVICE_URL
           value: "http://users-service:3001"
         - name: SKILLS_SERVICE_URL
           value: "http://skills-service:3002"
+        envFrom:
+        - configMapRef:
+            name: orders-config
 ---
 apiVersion: v1
 kind: Service

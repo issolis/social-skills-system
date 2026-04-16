@@ -18,9 +18,9 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 3002
-        env:
-        - name: PORT
-          value: "3002"
+        envFrom:
+        - configMapRef:
+            name: skills-config
 ---
 apiVersion: v1
 kind: Service
