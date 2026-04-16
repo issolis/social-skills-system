@@ -65,6 +65,17 @@ kubectl create configmap skills-config --from-env-file=./skills-service/.env
 kubectl create configmap orders-config --from-env-file=./orders-service/.env
 ```
 
-### 9. Probar el Sistema (CUANDO SE AGREGUE ALGUNA BASE DE DATOS)
+### 9. Probar el Sistema (Usar Postman Agent porque es local la dirección IP)
 Hacer peticiones desde Postman o el navegador usando la IP local.
 - **Ruta principal de Pedidos:** `http://127.0.0.1:3003/orders` o `http://localhost:3003/orders`
+- **Ruta principal de Habilidades:** `http://127.0.0.1:3002/skills` o `http://localhost:3002/skills`
+- **Ruta principal de Usuarios:** `http://127.0.0.1:3001/users` o `http://localhost:3001/users`
+    - Get de ejemplo: http://localhost:3001/users/3
+    - Post de ejemplo: http://localhost:3003/orders  
+     en Body --> raw --> JSON: 
+                                                `{
+                                                    "user_id": 1,
+                                                    "skill_id": 1,
+                                                    "pts_assigned": 5
+                                                }`
+    - Delete de ejemplo: http://127.0.0.1:3002/skills/17
