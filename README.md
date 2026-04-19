@@ -67,4 +67,4 @@ kubectl create configmap orders-config --from-env-file=./orders-service/.env
 
 ### 9. Probar el Sistema (Usar Postman Agent porque es local la dirección IP)
 Descargar el Postman Agent desde: `https://www.postman.com/downloads/postman-agent/`  
-Para hacer peticiones desde Postman seguir el `API_MANUAL.md`
+Para hacer peticiones desde Postman seguir el `Manual_API_restful` en la carpeta de Documentacion.
