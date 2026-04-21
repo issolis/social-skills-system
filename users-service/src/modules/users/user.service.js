@@ -3,7 +3,7 @@ import User from "./user.model.js";
 import UserDBValidator from "../../shared/db.validator/user.db.validator.js";
 import UserSkill from "../user_skills/user_skill.model.js";
 
-const SKILLS_SERVICE = "http://localhost:3002";
+const SKILLS_SERVICE = "http://skills-service:3002";
 
 
 export default class UserService {
