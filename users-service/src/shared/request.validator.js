@@ -64,4 +64,31 @@ export default class RequestValidator {
 
         return null;
     }
+
+    static validateFields(body, requiredFields) {
+        if (typeof body !== "object" || body === null || Array.isArray(body)) {
+            return "Body must be an object";
+        }
+
+        if (!Array.isArray(requiredFields)) {
+            return "Required fields must be an array";
+        }
+
+        const bodyFields = Object.keys(body);
+
+        for (const bodyField of bodyFields) {
+            if (!requiredFields.includes(bodyField)) {
+                return `Unexpected field: ${bodyField}`;
+            }
+        }
+
+        for (const requiredField of requiredFields) {
+            if (!bodyFields.includes(requiredField)) {
+                return `Missing field: ${requiredField}`;
+            }
+        }
+
+        return true;
+    }
+
 }
