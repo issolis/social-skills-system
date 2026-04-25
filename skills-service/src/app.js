@@ -3,7 +3,6 @@ import skillsRoutes from "./modules/skills/skill.routes.js";
 
 const app = express();
 
-
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -14,5 +13,16 @@ app.get("/", (req, res) => {
 });
 
 app.use("/skills", skillsRoutes);
+
+app.use((err, req, res, next) => {
+    const status = err.status || 500;
+    const message = err.message || "Internal server error";
+    
+    return res.status(status).json({
+        status: "error",
+        message,
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    });
+});
 
 export default app; 

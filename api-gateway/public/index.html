@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Skills System - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-secondary {
+            background: #764ba2;
+        }
+
+        .btn-secondary:hover {
+            background: #613a7a;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .response-container {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+
+        .response-container pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            color: #333;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .data-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .data-list li {
+            padding: 8px;
+            background: #f8f9fa;
+            margin-bottom: 5px;
+            border-radius: 3px;
+            border-left: 3px solid #667eea;
+            font-size: 12px;
+        }
+
+        .data-item {
+            background: white;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+            font-size: 12px;
+        }
+
+        .data-item strong {
+            color: #667eea;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notice {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 3px;
+            font-size: 13px;
+            color: #1565c0;
+        }
+
+        .full-width-card {
+            grid-column: 1 / -1;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .stat-box h3 {
+            color: #667eea;
+            font-size: 24px;
+            margin: 10px 0 5px;
+        }
+
+        .stat-box p {
+            color: #999;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-style: italic;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Social Skills System</h1>
+            <p>Demostración de Microservicios con API Gateway</p>
+        </header>
+
+        <div class="notice">
+            ℹ️ Esta interfaz demuestra la comunicación entre servicios RESTful a través de un API Gateway centralizado en el puerto 3000.
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat-box">
+                <p>Total de Usuarios</p>
+                <h3 id="usersCount">0</h3>
+            </div>
+            <div class="stat-box">
+                <p>Total de Habilidades</p>
+                <h3 id="skillsCount">0</h3>
+            </div>
+            <div class="stat-box">
+                <p>Total de Pedidos</p>
+                <h3 id="ordersCount">0</h3>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- USERS SECTION -->
+            <div class="card">
+                <h2>👥 Gestión de Usuarios</h2>
+
+                <div class="form-group">
+                    <label>Listar todos los usuarios</label>
+                    <button onclick="getAllUsers()">Obtener Usuarios</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Buscar usuario por ID</label>
+                    <input type="number" id="userId" placeholder="ID del usuario" min="1">
+                    <button onclick="getUserById()">Buscar</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Crear nuevo usuario</label>
+                    <input type="text" id="userName" placeholder="Nombre del usuario">
+                    <input type="email" id="userEmail" placeholder="Email del usuario" style="margin-top: 8px;">
+                    <button onclick="createUser()" style="margin-top: 8px;">Crear Usuario</button>
+                </div>
+
+                <div id="usersResponse" class="response-container"></div>
+            </div>
+
+            <!-- SKILLS SECTION -->
+            <div class="card">
+                <h2>⭐ Gestión de Habilidades</h2>
+
+                <div class="form-group">
+                    <label>Listar todas las habilidades</label>
+                    <button onclick="getAllSkills()">Obtener Habilidades</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Buscar habilidad por ID</label>
+                    <input type="number" id="skillId" placeholder="ID de la habilidad" min="1">
+                    <button onclick="getSkillById()">Buscar</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Crear nueva habilidad</label>
+                    <input type="text" id="skillName" placeholder="Nombre de la habilidad">
+                    <input type="number" id="skillLevel" placeholder="Nivel de dificultad (1-5)" min="1" max="5" style="margin-top: 8px;">
+                    <input type="number" id="skillPoints" placeholder="Puntos de experiencia" min="1" style="margin-top: 8px;">
+                    <button onclick="createSkill()" style="margin-top: 8px;">Crear Habilidad</button>
+                </div>
+
+                <div id="skillsResponse" class="response-container"></div>
+            </div>
+
+            <!-- ORDERS SECTION -->
+            <div class="card">
+                <h2>📦 Gestión de Pedidos</h2>
+
+                <div class="form-group">
+                    <label>Listar todos los pedidos</label>
+                    <button onclick="getAllOrders()">Obtener Pedidos</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Buscar pedido por ID</label>
+                    <input type="number" id="orderId" placeholder="ID del pedido" min="1">
+                    <button onclick="getOrderById()">Buscar</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Crear nuevo pedido</label>
+                    <select id="orderUserId">
+                        <option value="">-- Seleccionar Usuario --</option>
+                    </select>
+                    <select id="orderSkillId" style="margin-top: 8px;">
+                        <option value="">-- Seleccionar Habilidad --</option>
+                    </select>
+                    <button onclick="createOrder()" style="margin-top: 8px;">Crear Pedido</button>
+                </div>
+
+                <div id="ordersResponse" class="response-container"></div>
+            </div>
+
+            <!-- USER SKILLS SECTION -->
+            <div class="card">
+                <h2>🏆 Habilidades de Usuario</h2>
+
+                <div class="form-group">
+                    <label>Ver habilidades del usuario</label>
+                    <input type="number" id="userSkillsId" placeholder="ID del usuario" min="1">
+                    <button onclick="getUserSkills()">Ver Habilidades</button>
+                </div>
+
+                <div id="userSkillsResponse" class="response-container"></div>
+            </div>
+
+            <!-- API INFO SECTION -->
+            <div class="card full-width-card">
+                <h2>ℹ️ Información de la API</h2>
+
+                <div class="form-group">
+                    <button onclick="getGatewayHealth()">Health Check</button>
+                </div>
+
+                <div class="form-group">
+                    <button onclick="getGatewayInfo()">Información del Gateway</button>
+                </div>
+
+                <div id="infoResponse" class="response-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
