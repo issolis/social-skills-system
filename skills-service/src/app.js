@@ -1,5 +1,6 @@
 import express from "express";
 import skillsRoutes from "./modules/skills/skill.routes.js";
+import { authenticate } from "./middlewares/auth/auth.middleware.js";
 
 const app = express();
 
@@ -13,6 +14,6 @@ app.get("/", (req, res) => {
     });
 });
 
-app.use("/skills", skillsRoutes);
+app.use("/skills", authenticate, skillsRoutes);
 
 export default app; 
