@@ -33,6 +33,7 @@ Desde la raíz del proyecto (`social-skills-system`), construir cada imagen:
 docker build -t users-service:latest ./users-service
 docker build -t skills-service:latest ./skills-service
 docker build -t orders-service:latest ./orders-service
+docker build -t api-gateway:latest ./api-gateway
 ```
 
 ### 5. Desplegar la Infraestructura (Kubernetes)
@@ -40,20 +41,17 @@ Aplicar los manifiestos YAML para crear los Pods y Servicios:
 ```powershell
 kubectl apply -f ./k8s/
 ```
-Verificar que los 3 servicios digan `Running`:
-```powershell
-kubectl get pods
-```
 
-### 6. Exponer la API (LoadBalancer)
-Abra una **NUEVA terminal** y ejecuta este comando para crear un puente hacia tu computadora (hay que dejar la terminal abierta):
+### 6. Exponer la API (API-Gateway)
+Abra una **NUEVA terminal** y ejecute este comando para crear un puente hacia su computadora (hay que dejar la terminal abierta):
 ```powershell
-minikube tunnel
+minikube service api-gateway
 ```
 
 ### 7. Verificar que los ervicios corran
-En una terminal distinta a la de minikube tunnel:
 ```powershell
+kubectl get pods
+kubectl get svc
 kubectl get services
 ```
 
