@@ -62,7 +62,4 @@ export class Password {
     static async encrypt(password){
         return await bcrypt.hash(password, SALT_ROUNDS); 
     }
-    static async verify(password, password_hash){
-        return await bcrypt.compare(password, password_hash); 
-    }
 }

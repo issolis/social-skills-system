@@ -1,7 +1,7 @@
 import { Router } from "express";
 import OrderController from "./order.controller.js";
 import OrderValidator from "./order.validator.js";
-import ServiceAvailabilityMiddleware from "../../shared/service-availability.middleware.js";
+import ServiceAvailabilityMiddleware from "../../middleware/availability/service-availability.middleware.js";
 
 const router = Router();
 
