@@ -23,6 +23,13 @@ export default class OrderValidator {
             });
         }
 
+        if (req.params.id && parseInt(req.params.id) !== parseInt(user_id)) {
+            return res.status(403).json({
+                status: "error",
+                message: "Forbidden: you cannot create orders for someone else"
+            });
+        }
+
         if (!skill_id || isNaN(skill_id)) {
             return res.status(400).json({
                 status: "error",

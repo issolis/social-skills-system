@@ -55,7 +55,8 @@ export default class UserService {
                 username: data.username,
                 fname: data.fname,
                 lname: data.lname,
-                passwordHash
+                passwordHash: passwordHash, 
+                role_id: data.role_id
             }, client);
 
             await client.query("COMMIT");

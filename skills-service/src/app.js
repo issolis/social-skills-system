@@ -9,7 +9,7 @@ app.use(express.json());
 app.get("/", (req, res) => {
     return res.status(200).json({
         status: "success",
-        message: "Skills service is running"
+        message: "Skills services is running"
     });
 });
 
