@@ -1,10 +1,7 @@
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { publicKey } from "../../config/keys.js";
 
 export function authenticate(req, res, next) {
-
     const authHeader = req.headers["authorization"];
     const token = authHeader?.split(" ")[1];
 
@@ -15,7 +12,7 @@ export function authenticate(req, res, next) {
         });
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_PUBLIC_KEY, {
+        const decoded = jwt.verify(token, publicKey, {
             algorithms: ["RS256"]
         });
         req.user = decoded;

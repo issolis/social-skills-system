@@ -19,6 +19,7 @@ export function authenticate(req, res, next) {
         next();
 
     } catch (error) {
+        console.log("hello")
         return res.status(401).json({
             status: "error",
             error: error.message

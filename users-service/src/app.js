@@ -1,6 +1,8 @@
 import express from "express";
 import userRoutes from "./modules/users/user.routes.js";
 
+import { authenticate } from "./middlewares/auth/auth.middleware.js"
+
 const app = express();
 
 app.use(express.json({ limit: '20mb' }));
@@ -10,6 +12,6 @@ app.get("/", (req, res) => {
     res.send("Users service is running");
 });
 
-app.use("/users", userRoutes);
+app.use("/users", authenticate, userRoutes);
 
 export default app;
