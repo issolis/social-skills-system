@@ -1,7 +1,16 @@
 import OrderModel from "./order.model.js";
+import { getServiceToken } from "../../config/serviceAuth.js";
 
-const USERS_SERVICE = process.env.USERS_SERVICE_URL || "http://users-service:3001";
-const SKILLS_SERVICE = process.env.SKILLS_SERVICE_URL || "http://skills-service:3002";
+const USERS_SERVICE = process.env.USERS_SERVICE_URL || "http://localhost:3001";
+const SKILLS_SERVICE = process.env.SKILLS_SERVICE_URL || "http://localhost:3002";
+
+async function authHeaders(extra = {}) {
+    const token = await getServiceToken();
+    return {
+        "Authorization": `Bearer ${token}`,
+        ...extra
+    };
+}
 
 export default class OrderService {
 
@@ -24,34 +33,26 @@ export default class OrderService {
     static async create(data) {
         const { user_id, skill_id, pts_assigned } = data;
 
+        const headers = await authHeaders();
+        const jsonHeaders = await authHeaders({ "Content-Type": "application/json" });
+
         let pointsDecreased = false;
 
         try {
-            const userRes = await fetch(`${USERS_SERVICE}/users/${user_id}`);
+            const [userRes, skillRes] = await Promise.all([
+                fetch(`${USERS_SERVICE}/users/${user_id}`, { headers }),
+                fetch(`${SKILLS_SERVICE}/skills/${skill_id}`, { headers })
+            ]);
 
             if (!userRes.ok) {
-                if (userRes.status === 404) {
-                    const error = new Error("User not found");
-                    error.status = 404;
-                    throw error;
-                }
-
-                const error = new Error("Users service is not available");
-                error.status = 503;
+                const error = new Error(userRes.status === 404 ? "User not found" : "Users service is not available");
+                error.status = userRes.status === 404 ? 404 : 503;
                 throw error;
             }
 
-            const skillRes = await fetch(`${SKILLS_SERVICE}/skills/${skill_id}`);
-
             if (!skillRes.ok) {
-                if (skillRes.status === 404) {
-                    const error = new Error("Skill not found");
-                    error.status = 404;
-                    throw error;
-                }
-
-                const error = new Error("Skills service is not available");
-                error.status = 503;
+                const error = new Error(skillRes.status === 404 ? "Skill not found" : "Skills service is not available");
+                error.status = skillRes.status === 404 ? 404 : 503;
                 throw error;
             }
 
@@ -63,14 +64,11 @@ export default class OrderService {
                 throw error;
             }
 
-            const decreaseRes = await fetch(
-                `${SKILLS_SERVICE}/skills/${skill_id}/decrease`,
-                {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ points: pts_assigned })
-                }
-            );
+            const decreaseRes = await fetch(`${SKILLS_SERVICE}/skills/${skill_id}/decrease`, {
+                method: "PATCH",
+                headers: jsonHeaders,
+                body: JSON.stringify({ points: pts_assigned })
+            });
 
             if (!decreaseRes.ok) {
                 const error = new Error("Failed to decrease skill points");
@@ -80,43 +78,32 @@ export default class OrderService {
 
             pointsDecreased = true;
 
-            const userSkillRes = await fetch(
-                `${USERS_SERVICE}/users/skills/${user_id}/${skill_id}/increase`,
-                {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ amount: pts_assigned })
-                }
-            );
+            const userSkillRes = await fetch(`${USERS_SERVICE}/users/skills/${user_id}/${skill_id}/increase`, {
+                method: "PATCH",
+                headers: jsonHeaders,
+                body: JSON.stringify({ amount: pts_assigned })
+            });
+
             if (!userSkillRes.ok) {
                 const error = new Error("Failed to assign skill experience to user");
                 error.status = userSkillRes.status >= 500 ? 503 : 400;
                 throw error;
             }
 
-            return await OrderModel.create({
-                user_id,
-                skill_id,
-                pts_assigned,
-                status: "completed"
-            });
+            return await OrderModel.create({ user_id, skill_id, pts_assigned, status: "completed" });
 
         } catch (error) {
             if (pointsDecreased) {
                 try {
-                    await fetch(
-                        `${SKILLS_SERVICE}/skills/${skill_id}/increase`,
-                        {
-                            method: "PATCH",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ points: pts_assigned })
-                        }
-                    );
+                    await fetch(`${SKILLS_SERVICE}/skills/${skill_id}/increase`, {
+                        method: "PATCH",
+                        headers: jsonHeaders,
+                        body: JSON.stringify({ points: pts_assigned })
+                    });
                 } catch (rollbackError) {
                     console.error("Rollback failed:", rollbackError.message);
                 }
             }
-
             throw error;
         }
     }

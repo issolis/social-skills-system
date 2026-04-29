@@ -30,22 +30,24 @@ export default class User {
     }
 
     static async create(data, client = pool) {
-        const { username, fname, lname, passwordHash } = data;
+        const { username, fname, lname, passwordHash, role_id } = data;
 
         const result = await client.query(`
         INSERT INTO users (
             username,
             fname,
             lname, 
-            password_hash
+            password_hash, 
+            role_id
         )
-        VALUES ($1, $2, $3, $4)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING
             id,
             username,
             fname,
-            lname
-    `, [username, fname, lname, passwordHash]);
+            lname,
+            role_id
+    `, [username, fname, lname, passwordHash, role_id]);
 
         return result.rows[0];
     }

@@ -1,13 +1,10 @@
-import pool from "../../config/db.js";
 import { Auth } from "./auth.model.js";
 import { Password } from "../../helpers/password/password.js";
+import { privateKey } from "../../config/keys.js";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config();
 
 export class AuthService {
-    static async login(username, password, client = pool) {
-        console.log("hello"); 
+    static async login(username, password) {
         const foundUser = await Auth.getUserByUsername(username);
         if (!foundUser) {
             const error = new Error("User doesn't exists");
@@ -23,8 +20,8 @@ export class AuthService {
         }
 
         const token = jwt.sign(
-            { id: foundUser.id, username: foundUser.username },
-            process.env.JWT_PRIVATE_KEY,
+            { id: foundUser.id, username: username, role: foundUser.role_id },
+            privateKey,
             { algorithm: "RS256", expiresIn: "1h" }
         );
 

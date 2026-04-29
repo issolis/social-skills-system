@@ -1,5 +1,48 @@
 const API_BASE = '/api';
 
+// Token management
+let authToken = localStorage.getItem('authToken') || null;
+
+function setToken(token) {
+    authToken = token;
+    localStorage.setItem('authToken', token);
+    updateTokenUI();
+}
+
+function getToken() {
+    return authToken;
+}
+
+function clearToken() {
+    authToken = null;
+    localStorage.removeItem('authToken');
+    updateTokenUI();
+}
+
+function updateTokenUI() {
+    const tokenDisplay = document.getElementById('tokenDisplay');
+    const authSection = document.getElementById('authSection');
+    const apiSection = document.getElementById('apiSection');
+    
+    if (authToken) {
+        tokenDisplay.textContent = authToken.substring(0, 50) + '...';
+        authSection.style.display = 'none';
+        apiSection.style.display = 'block';
+    } else {
+        tokenDisplay.textContent = 'No token';
+        authSection.style.display = 'block';
+        apiSection.style.display = 'none';
+    }
+}
+
+function getHeaders() {
+    const headers = { 'Content-Type': 'application/json' };
+    if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+    }
+    return headers;
+}
+
 // Utility function to format responses
 function formatResponse(data) {
     return JSON.stringify(data, null, 2);
@@ -19,11 +62,56 @@ function displayResponse(elementId, data, status = 'success', isLoading = false)
     element.innerHTML = `<span class="status ${statusClass}">${statusText}</span><pre>${formatResponse(data)}</pre>`;
 }
 
+// AUTH ENDPOINTS
+async function login() {
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+
+    if (!username || !password) {
+        alert('Por favor completa todos los campos');
+        return;
+    }
+
+    displayResponse('authResponse', {}, 'success', true);
+    try {
+        const response = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await response.json();
+        
+        if (response.ok && data.data?.token) {
+            setToken(data.data.token);
+            displayResponse('authResponse', {
+                status: 'success',
+                message: 'Logged in successfully',
+                user: data.data.user
+            }, 'success');
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            loadDropdowns();
+        } else {
+            displayResponse('authResponse', data, 'error');
+        }
+    } catch (error) {
+        displayResponse('authResponse', { error: error.message }, 'error');
+    }
+}
+
+function logout() {
+    clearToken();
+    displayResponse('authResponse', {
+        status: 'success',
+        message: 'Logged out successfully'
+    }, 'success');
+}
+
 // Load users and skills into dropdowns
 async function loadDropdowns() {
     try {
         // Load users
-        const usersRes = await fetch(`${API_BASE}/users`);
+        const usersRes = await fetch(`${API_BASE}/users`, { headers: getHeaders() });
         if (usersRes.ok) {
             const usersData = await usersRes.json();
             const users = usersData.data || [];
@@ -37,7 +125,7 @@ async function loadDropdowns() {
         }
 
         // Load skills
-        const skillsRes = await fetch(`${API_BASE}/skills`);
+        const skillsRes = await fetch(`${API_BASE}/skills`, { headers: getHeaders() });
         if (skillsRes.ok) {
             const skillsData = await skillsRes.json();
             const skills = skillsData.data || [];
@@ -60,7 +148,7 @@ async function loadDropdowns() {
 async function updateStats() {
     try {
         // Users count
-        const usersRes = await fetch(`${API_BASE}/users`);
+        const usersRes = await fetch(`${API_BASE}/users`, { headers: getHeaders() });
         if (usersRes.ok) {
             const usersData = await usersRes.json();
             const users = usersData.data || [];
@@ -68,7 +156,7 @@ async function updateStats() {
         }
 
         // Skills count
-        const skillsRes = await fetch(`${API_BASE}/skills`);
+        const skillsRes = await fetch(`${API_BASE}/skills`, { headers: getHeaders() });
         if (skillsRes.ok) {
             const skillsData = await skillsRes.json();
             const skills = skillsData.data || [];
@@ -91,7 +179,9 @@ async function updateStats() {
 async function getAllUsers() {
     displayResponse('usersResponse', {}, 'success', true);
     try {
-        const response = await fetch(`${API_BASE}/users`);
+        const response = await fetch(`${API_BASE}/users`, {
+            headers: getHeaders()
+        });
         const data = await response.json();
         displayResponse('usersResponse', data, response.ok ? 'success' : 'error');
         updateStats();
@@ -109,7 +199,9 @@ async function getUserById() {
 
     displayResponse('usersResponse', {}, 'success', true);
     try {
-        const response = await fetch(`${API_BASE}/users/${id}`);
+        const response = await fetch(`${API_BASE}/users/${id}`, {
+            headers: getHeaders()
+        });
         const data = await response.json();
         displayResponse('usersResponse', data, response.ok ? 'success' : 'error');
     } catch (error) {
@@ -118,11 +210,14 @@ async function getUserById() {
 }
 
 async function createUser() {
-    const name = document.getElementById('userName').value;
-    const email = document.getElementById('userEmail').value;
+    const username = document.getElementById('newUsername').value;
+    const fname = document.getElementById('newFname').value;
+    const lname = document.getElementById('newLname').value;
+    const password = document.getElementById('newPassword').value;
+    const role_id = parseInt(document.getElementById('newRole').value);
 
-    if (!name || !email) {
-        alert('Por favor completa todos los campos');
+    if (!username || !fname || !lname || !password || !role_id) {
+        alert('Por favor completa todos los campos requeridos');
         return;
     }
 
@@ -130,15 +225,17 @@ async function createUser() {
     try {
         const response = await fetch(`${API_BASE}/users`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email })
+            headers: getHeaders(),
+            body: JSON.stringify({ username, fname, lname, password, role_id })
         });
         const data = await response.json();
         displayResponse('usersResponse', data, response.ok ? 'success' : 'error');
 
         if (response.ok) {
-            document.getElementById('userName').value = '';
-            document.getElementById('userEmail').value = '';
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newFname').value = '';
+            document.getElementById('newLname').value = '';
+            document.getElementById('newPassword').value = '';
             loadDropdowns();
         }
     } catch (error) {
@@ -150,7 +247,9 @@ async function createUser() {
 async function getAllSkills() {
     displayResponse('skillsResponse', {}, 'success', true);
     try {
-        const response = await fetch(`${API_BASE}/skills`);
+        const response = await fetch(`${API_BASE}/skills`, {
+            headers: getHeaders()
+        });
         const data = await response.json();
         displayResponse('skillsResponse', data, response.ok ? 'success' : 'error');
         updateStats();
@@ -168,7 +267,9 @@ async function getSkillById() {
 
     displayResponse('skillsResponse', {}, 'success', true);
     try {
-        const response = await fetch(`${API_BASE}/skills/${id}`);
+        const response = await fetch(`${API_BASE}/skills/${id}`, {
+            headers: getHeaders()
+        });
         const data = await response.json();
         displayResponse('skillsResponse', data, response.ok ? 'success' : 'error');
     } catch (error) {
@@ -190,7 +291,7 @@ async function createSkill() {
     try {
         const response = await fetch(`${API_BASE}/skills`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getHeaders(),
             body: JSON.stringify({
                 name,
                 difficulty_level: parseInt(level),
@@ -215,7 +316,9 @@ async function createSkill() {
 async function getAllOrders() {
     displayResponse('ordersResponse', {}, 'success', true);
     try {
-        const response = await fetch(`${API_BASE}/orders`);
+        const response = await fetch(`${API_BASE}/orders`, {
+            headers: getHeaders()
+        });
         const data = await response.json();
         displayResponse('ordersResponse', data, response.ok ? 'success' : 'error');
         updateStats();
@@ -233,7 +336,9 @@ async function getOrderById() {
 
     displayResponse('ordersResponse', {}, 'success', true);
     try {
-        const response = await fetch(`${API_BASE}/orders/${id}`);
+        const response = await fetch(`${API_BASE}/orders/${id}`, {
+            headers: getHeaders()
+        });
         const data = await response.json();
         displayResponse('ordersResponse', data, response.ok ? 'success' : 'error');
     } catch (error) {
@@ -254,7 +359,7 @@ async function createOrder() {
     try {
         const response = await fetch(`${API_BASE}/orders`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getHeaders(),
             body: JSON.stringify({
                 user_id: parseInt(userId),
                 skill_id: parseInt(skillId),
@@ -284,7 +389,9 @@ async function getUserSkills() {
 
     displayResponse('userSkillsResponse', {}, 'success', true);
     try {
-        const response = await fetch(`${API_BASE}/users/${id}/skills`);
+        const response = await fetch(`${API_BASE}/users/${id}/skills`, {
+            headers: getHeaders()
+        });
         const data = await response.json();
         displayResponse('userSkillsResponse', data, response.ok ? 'success' : 'error');
     } catch (error) {
@@ -317,5 +424,8 @@ async function getGatewayInfo() {
 
 // Initialize on page load
 window.addEventListener('DOMContentLoaded', () => {
-    loadDropdowns();
+    updateTokenUI();
+    if (authToken) {
+        loadDropdowns();
+    }
 });

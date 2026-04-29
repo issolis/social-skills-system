@@ -5,6 +5,6 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3004; 
 
-app.listen(PORT, ()=>{
-    console.log(`[SERVER] Users service running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', ()=>{
+    console.log(`[SERVER] Auth service running on port ${PORT}`);
 }); 
