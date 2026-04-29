@@ -28,19 +28,28 @@ Este comando conecta la terminal con el Docker interno de Minikube para no tener
 ```
 ### 4. Limpieza de imagenes, configmaps, etc...
 ### Borrar todos los deployments, servicios y pods definidos en los archivos YAML
+```
 kubectl delete -f ./k8s/
-
+```
 ### Borrar específicamente los ConfigMaps (para asegurar que carguen los .env nuevos)
+```
 kubectl delete configmap auth-config users-config skills-config orders-config
+```
 
 ### Por si acaso quedaron recursos huérfanos
+```
 kubectl delete pods --all
+```
 
 # Asegurarse de estar apuntando al docker de minikube
+```
 & minikube -p minikube docker-env --shell powershell | Invoke-Expression
+```
 
 # Borrar imágenes anteriores para forzar una construcción limpia
+```
 docker rmi auth-service:latest users-service:latest skills-service:latest orders-service:latest api-gateway:latest
+```
 
 ### 5. Construir las Imágenes de los Microservicios
 Desde la raíz del proyecto (`social-skills-system`), construir cada imagen:
