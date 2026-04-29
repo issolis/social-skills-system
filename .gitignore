@@ -1,3 +1,5 @@
 */node_modules
 */.env
 */src/config/keys/*.pem
+private.pem
+public.pem
