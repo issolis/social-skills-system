@@ -10,8 +10,6 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // Serve static files (frontend)
 app.use(express.static(path.join(__dirname, '../public')));
@@ -31,6 +29,7 @@ app.get('/api', (req, res) => {
         status: 'success',
         message: 'API Gateway - Social Skills System',
         endpoints: {
+            auth: '/api/auth',
             users: '/api/users',
             skills: '/api/skills',
             orders: '/api/orders'
@@ -38,7 +37,29 @@ app.get('/api', (req, res) => {
     });
 });
 
-// Proxy routes
+// Proxy routes with timeout settings
+const proxyOptions = {
+    timeout: 30000, // 30 seconds
+    proxyTimeout: 30000 // 30 seconds
+};
+
+app.use('/api/auth', createProxyMiddleware({
+    target: process.env.AUTH_SERVICE_URL,
+    changeOrigin: true,
+    pathRewrite: {
+        '^/api/auth': '/auth'
+    },
+    timeout: proxyOptions.timeout,
+    proxyTimeout: proxyOptions.proxyTimeout,
+    onError: (err, req, res) => {
+        console.error('Auth service error:', err.message);
+        res.status(503).json({
+            status: 'error',
+            message: 'Auth service unavailable',
+            error: err.message
+        });
+    }
+}));
 app.use('/api/users', createProxyMiddleware({
     target: process.env.USERS_SERVICE_URL,
     changeOrigin: true,
@@ -86,6 +107,10 @@ app.use('/api/orders', createProxyMiddleware({
         });
     }
 }));
+
+// Body parsing middleware (must be placed after proxies to avoid stream consumption issues)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Serve frontend for root and SPA routes
 app.get('/', (req, res) => {
