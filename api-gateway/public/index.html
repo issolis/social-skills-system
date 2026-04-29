@@ -302,6 +302,41 @@
             ℹ️ Esta interfaz demuestra la comunicación entre servicios RESTful a través de un API Gateway centralizado en el puerto 3000.
         </div>
 
+        <!-- AUTH TOKEN DISPLAY -->
+        <div class="card full-width-card" style="background: #f0f4ff; border: 2px solid #667eea;">
+            <h2 style="color: #667eea;">🔐 Estado de Autenticación</h2>
+            <div class="form-group">
+                <label>Token Actual:</label>
+                <div style="background: white; padding: 10px; border-radius: 5px; word-break: break-all; font-size: 12px; font-family: monospace;">
+                    <span id="tokenDisplay">No token</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- AUTH SECTION -->
+        <div id="authSection">
+            <div class="card full-width-card">
+                <h2>🔑 Iniciar Sesión</h2>
+                <div class="notice">
+                    Credenciales de prueba: username: test | password: password123
+                </div>
+
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" id="loginUsername" placeholder="Nombre de usuario">
+                </div>
+
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="loginPassword" placeholder="Contraseña">
+                </div>
+
+                <button onclick="login()">Iniciar Sesión</button>
+
+                <div id="authResponse" class="response-container"></div>
+            </div>
+        </div>
+
         <div class="stats" id="stats">
             <div class="stat-box">
                 <p>Total de Usuarios</p>
@@ -317,7 +352,15 @@
             </div>
         </div>
 
-        <div class="grid">
+        <div id="apiSection">
+            <div class="grid">
+                <!-- LOGOUT CONTROL -->
+                <div class="card full-width-card" style="background: #fff3cd; border: 2px solid #ffc107;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #856404;">✓ Sesión activa - Puedes usar todos los endpoints</span>
+                        <button class="btn-danger" onclick="logout()" style="width: 150px;">Cerrar Sesión</button>
+                    </div>
+                </div>
             <!-- USERS SECTION -->
             <div class="card">
                 <h2>👥 Gestión de Usuarios</h2>
@@ -335,9 +378,23 @@
 
                 <div class="form-group">
                     <label>Crear nuevo usuario</label>
-                    <input type="text" id="userName" placeholder="Nombre del usuario">
-                    <input type="email" id="userEmail" placeholder="Email del usuario" style="margin-top: 8px;">
-                    <button onclick="createUser()" style="margin-top: 8px;">Crear Usuario</button>
+                      <input type="text" id="newUsername" placeholder="Nombre de usuario (username)">
+                      <input type="text" id="newFname" placeholder="Nombre (fname)" style="margin-top: 8px;">
+                      <input type="text" id="newLname" placeholder="Apellido (lname)" style="margin-top: 8px;">
+                      <input type="password" id="newPassword" placeholder="Contraseña" style="margin-top: 8px;">
+                      <select id="newRole" style="margin-top: 8px; width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                          <option value="2">Usuario Regular (2)</option>
+                          <option value="1">Administrador (1)</option>
+                      </select>
+                      <button onclick="createUser()" style="margin-top: 8px; width: 100%;">Crear Usuario</button>
+                  </div>
+
+                <div class="form-group">
+                    <label>Eliminar usuario</label>
+                    <div class="flex-row">
+                      <input type="text" id="deleteUserId" placeholder="ID del usuario">
+                      <button class="btn-danger" style="margin-left: 8px;" onclick="deleteUser()">Eliminar</button>
+                    </div>
                 </div>
 
                 <div id="usersResponse" class="response-container"></div>
@@ -364,6 +421,14 @@
                     <input type="number" id="skillLevel" placeholder="Nivel de dificultad (1-5)" min="1" max="5" style="margin-top: 8px;">
                     <input type="number" id="skillPoints" placeholder="Puntos de experiencia" min="1" style="margin-top: 8px;">
                     <button onclick="createSkill()" style="margin-top: 8px;">Crear Habilidad</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Eliminar habilidad</label>
+                    <div class="flex-row">
+                      <input type="text" id="deleteSkillId" placeholder="ID de habilidad">
+                      <button class="btn-danger" style="margin-left: 8px;" onclick="deleteSkill()">Eliminar</button>
+                    </div>
                 </div>
 
                 <div id="skillsResponse" class="response-container"></div>
@@ -393,6 +458,14 @@
                         <option value="">-- Seleccionar Habilidad --</option>
                     </select>
                     <button onclick="createOrder()" style="margin-top: 8px;">Crear Pedido</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Eliminar pedido</label>
+                    <div class="flex-row">
+                      <input type="text" id="deleteOrderId" placeholder="ID de pedido">
+                      <button class="btn-danger" style="margin-left: 8px;" onclick="deleteOrder()">Eliminar</button>
+                    </div>
                 </div>
 
                 <div id="ordersResponse" class="response-container"></div>
@@ -425,6 +498,7 @@
 
                 <div id="infoResponse" class="response-container"></div>
             </div>
+        </div>
         </div>
     </div>
 
