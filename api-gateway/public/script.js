@@ -49,10 +49,16 @@ function formatResponse(data) {
 }
 
 // Utility function to display responses
-function displayResponse(elementId, data, status = 'success', isLoading = false) {
+function displayResponse(elementId, data, status = 'success', isLoading = false, statusCode = null) {
     const element = document.getElementById(elementId);
     const statusClass = isLoading ? 'loading' : status;
-    const statusText = isLoading ? 'Cargando...' : (status === 'error' ? '❌ Error' : '✅ Éxito');
+    let statusText = '';
+    
+    if (isLoading) {
+        statusText = 'Cargando...';
+    } else {
+        statusText = statusCode ? `Código: ${statusCode}` : (status === 'error' ? 'Error' : 'Éxito');
+    }
 
     if (isLoading) {
         element.innerHTML = `<span class="loading-spinner"></span>${statusText}`;
@@ -87,12 +93,12 @@ async function login() {
                 status: 'success',
                 message: 'Logged in successfully',
                 user: data.data.user
-            }, 'success');
+            }, 'success', false, response.status);
             document.getElementById('loginUsername').value = '';
             document.getElementById('loginPassword').value = '';
             loadDropdowns();
         } else {
-            displayResponse('authResponse', data, 'error');
+            displayResponse('authResponse', data, 'error', false, response.status);
         }
     } catch (error) {
         displayResponse('authResponse', { error: error.message }, 'error');
@@ -104,7 +110,7 @@ function logout() {
     displayResponse('authResponse', {
         status: 'success',
         message: 'Logged out successfully'
-    }, 'success');
+    }, 'success', false, 200);
 }
 
 // Load users and skills into dropdowns
@@ -185,7 +191,7 @@ async function getAllUsers() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('usersResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('usersResponse', data, response.ok ? 'success' : 'error', false, response.status);
         updateStats();
     } catch (error) {
         displayResponse('usersResponse', { error: error.message }, 'error');
@@ -205,7 +211,7 @@ async function getUserById() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('usersResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('usersResponse', data, response.ok ? 'success' : 'error', false, response.status);
     } catch (error) {
         displayResponse('usersResponse', { error: error.message }, 'error');
     }
@@ -231,7 +237,7 @@ async function createUser() {
             body: JSON.stringify({ username, fname, lname, password, role_id })
         });
         const data = await response.json();
-        displayResponse('usersResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('usersResponse', data, response.ok ? 'success' : 'error', false, response.status);
 
         if (response.ok) {
             document.getElementById('newUsername').value = '';
@@ -256,7 +262,7 @@ async function deleteUser() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('usersResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('usersResponse', data, response.ok ? 'success' : 'error', false, response.status);
         if (response.ok) {
             document.getElementById('deleteUserId').value = '';
             loadDropdowns();
@@ -274,7 +280,7 @@ async function getAllSkills() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error', false, response.status);
         updateStats();
     } catch (error) {
         displayResponse('skillsResponse', { error: error.message }, 'error');
@@ -294,7 +300,7 @@ async function getSkillById() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error', false, response.status);
     } catch (error) {
         displayResponse('skillsResponse', { error: error.message }, 'error');
     }
@@ -320,7 +326,7 @@ async function createSkill() {
             })
         });
         const data = await response.json();
-        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error', false, response.status);
 
         if (response.ok) {
             document.getElementById('skillName').value = '';
@@ -343,7 +349,7 @@ async function deleteSkill() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error', false, response.status);
         if (response.ok) {
             document.getElementById('deleteSkillId').value = '';
             loadDropdowns();
@@ -361,7 +367,7 @@ async function getAllOrders() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error', false, response.status);
         updateStats();
     } catch (error) {
         displayResponse('ordersResponse', { error: error.message }, 'error');
@@ -381,7 +387,7 @@ async function getOrderById() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error', false, response.status);
     } catch (error) {
         displayResponse('ordersResponse', { error: error.message }, 'error');
     }
@@ -409,7 +415,7 @@ async function createOrder() {
             })
         });
         const data = await response.json();
-        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error', false, response.status);
 
         if (response.ok) {
             document.getElementById('orderUserId').value = '';
@@ -433,7 +439,7 @@ async function deleteOrder() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error', false, response.status);
         if (response.ok) {
             document.getElementById('deleteOrderId').value = '';
             updateStats();
@@ -457,7 +463,7 @@ async function getUserSkills() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('userSkillsResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('userSkillsResponse', data, response.ok ? 'success' : 'error', false, response.status);
     } catch (error) {
         displayResponse('userSkillsResponse', { error: error.message }, 'error');
     }
@@ -469,7 +475,7 @@ async function getGatewayHealth() {
     try {
         const response = await fetch('/health');
         const data = await response.json();
-        displayResponse('infoResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('infoResponse', data, response.ok ? 'success' : 'error', false, response.status);
     } catch (error) {
         displayResponse('infoResponse', { error: error.message }, 'error');
     }
@@ -480,7 +486,7 @@ async function getGatewayInfo() {
     try {
         const response = await fetch(`${API_BASE}`);
         const data = await response.json();
-        displayResponse('infoResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('infoResponse', data, response.ok ? 'success' : 'error', false, response.status);
     } catch (error) {
         displayResponse('infoResponse', { error: error.message }, 'error');
     }
