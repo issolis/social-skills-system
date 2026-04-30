@@ -107,7 +107,7 @@ export default class UserService {
         return await User.delete(id, client);
     }
 
-    static async getSkillsByUserId(userId) {
+    static async getSkillsByUserId(userId, token) {
         const user = await User.getById(userId);
 
         if (!user) {
@@ -132,7 +132,10 @@ export default class UserService {
             relations.map(async (relation) => {
                 try {
                     const skillRes = await fetch(
-                        `${SKILLS_SERVICE}/skills/${relation.skill_id}`
+                        `${SKILLS_SERVICE}/skills/${relation.skill_id}`,
+                        {
+                            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                        }
                     );
 
                     if (!skillRes.ok) {
