@@ -18,17 +18,28 @@ export default class UserValidator {
             return res.status(400).json({ message: bodyError });
         }
 
-        const { username, fname, lname } = req.body;
+        const fieldsError = RequestValidator.validateFields(
+            req.body,
+            ["username", "fname", "lname", "password", "role_id"]
+        );
+
+        if (fieldsError !== true) {
+            return res.status(400).json({ message: fieldsError });
+        }
+
+        const { username, fname, lname, password, role_id } = req.body;
 
         const errors = [
             RequestValidator.validateRequiredString(username, "username"),
             RequestValidator.validateRequiredString(fname, "fname"),
-            RequestValidator.validateRequiredString(lname, "lname")
+            RequestValidator.validateRequiredString(lname, "lname"),
+            RequestValidator.validateRequiredString(password, "password")
         ].filter(Boolean);
 
         if (errors.length > 0) {
             return res.status(400).json({ message: errors[0] });
         }
+
 
         next();
     }

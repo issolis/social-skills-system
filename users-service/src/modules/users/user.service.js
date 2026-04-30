@@ -2,6 +2,7 @@ import pool from "../../config/db.js";
 import User from "./user.model.js";
 import UserDBValidator from "../../shared/db.validator/user.db.validator.js";
 import UserSkill from "../user_skills/user_skill.model.js";
+import { Password } from "../../helpers/Password/password.js";
 
 const SKILLS_SERVICE = "http://skills-service:3002";
 
@@ -23,19 +24,50 @@ export default class UserService {
         return user;
     }
 
-    static async create(data, client = pool) {
-        const usernameExists = await UserDBValidator.existsByUsername(
-            data.username,
-            client
-        );
+    static async create(data) {
+        const client = await pool.connect();
 
-        if (usernameExists) {
-            const error = new Error("Username already exists");
-            error.status = 409;
+        try {
+            await client.query("BEGIN");
+
+            const usernameExists = await UserDBValidator.existsByUsername(
+                data.username,
+                client
+            );
+
+            if (usernameExists) {
+                const error = new Error("Username already exists");
+                error.status = 409;
+                throw error;
+            }
+
+            const passwordOK = Password.validatePassword(data.password);
+
+            if (passwordOK !== true) {
+                const error = new Error(passwordOK);
+                error.status = 422;
+                throw error;
+            }
+
+            const passwordHash = await Password.encrypt(data.password);
+
+            const createdUser = await User.create({
+                username: data.username,
+                fname: data.fname,
+                lname: data.lname,
+                passwordHash: passwordHash, 
+                role_id: data.role_id
+            }, client);
+
+            await client.query("COMMIT");
+
+            return createdUser;
+        } catch (error) {
+            await client.query("ROLLBACK");
             throw error;
+        } finally {
+            client.release();
         }
-
-        return await User.create(data, client);
     }
 
     static async update(id, data, client = pool) {
@@ -75,7 +107,7 @@ export default class UserService {
         return await User.delete(id, client);
     }
 
-    static async getSkillsByUserId(userId) {
+    static async getSkillsByUserId(userId, token) {
         const user = await User.getById(userId);
 
         if (!user) {
@@ -100,7 +132,10 @@ export default class UserService {
             relations.map(async (relation) => {
                 try {
                     const skillRes = await fetch(
-                        `${SKILLS_SERVICE}/skills/${relation.skill_id}`
+                        `${SKILLS_SERVICE}/skills/${relation.skill_id}`,
+                        {
+                            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                        }
                     );
 
                     if (!skillRes.ok) {

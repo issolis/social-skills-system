@@ -91,8 +91,9 @@ export default class UserController {
     static async getSkillsByUserId(req, res) {
         try {
             const { id } = req.params;
+            const token = req.headers["authorization"]?.split(" ")[1];
 
-            const data = await UserService.getSkillsByUserId(Number(id));
+            const data = await UserService.getSkillsByUserId(Number(id), token);
 
             return res.status(200).json({
                 status: "success",

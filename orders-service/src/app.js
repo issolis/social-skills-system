@@ -1,5 +1,6 @@
 import express from "express";
 import ordersRoutes from "./modules/orders/order.routes.js";
+import {authenticate} from "./middleware/auth/auth.middleware.js"
 
 const app = express();
 
@@ -12,6 +13,17 @@ app.get("/", (req, res) => {
     });
 });
 
-app.use("/orders", ordersRoutes);
+app.use("/orders", authenticate, ordersRoutes);
+
+app.use((err, req, res, next) => {
+    const status = err.status || 500;
+    const message = err.message || "Internal server error";
+    
+    return res.status(status).json({
+        status: "error",
+        message,
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    });
+});
 
 export default app;

@@ -26,45 +26,78 @@ Este comando conecta la terminal con el Docker interno de Minikube para no tener
 ```powershell
 & minikube -p minikube docker-env --shell powershell | Invoke-Expression
 ```
+### 4. Limpieza de imagenes, configmaps, etc...
+### Borrar todos los deployments, servicios y pods definidos en los archivos YAML
+```
+kubectl delete -f ./k8s/
+```
+### Borrar específicamente los ConfigMaps (para asegurar que carguen los .env nuevos)
+```
+kubectl delete configmap auth-config users-config skills-config orders-config
+```
 
-### 4. Construir las Imágenes de los Microservicios
+### Por si acaso quedaron recursos huérfanos
+```
+kubectl delete pods --all
+```
+
+# Asegurarse de estar apuntando al docker de minikube
+```
+& minikube -p minikube docker-env --shell powershell | Invoke-Expression
+```
+
+# Borrar imágenes anteriores para forzar una construcción limpia
+```
+docker rmi auth-service:latest users-service:latest skills-service:latest orders-service:latest api-gateway:latest
+```
+
+### 5. Construir las Imágenes de los Microservicios
 Desde la raíz del proyecto (`social-skills-system`), construir cada imagen:
 ```powershell
+docker build -t auth-service:latest ./auth-service
 docker build -t users-service:latest ./users-service
 docker build -t skills-service:latest ./skills-service
 docker build -t orders-service:latest ./orders-service
+docker build -t api-gateway:latest ./api-gateway
 ```
-
-### 5. Desplegar la Infraestructura (Kubernetes)
-Aplicar los manifiestos YAML para crear los Pods y Servicios:
-```powershell
-kubectl apply -f ./k8s/
-```
-Verificar que los 3 servicios digan `Running`:
-```powershell
-kubectl get pods
-```
-
-### 6. Exponer la API (LoadBalancer)
-Abra una **NUEVA terminal** y ejecuta este comando para crear un puente hacia tu computadora (hay que dejar la terminal abierta):
-```powershell
-minikube tunnel
-```
-
-### 7. Verificar que los ervicios corran
-En una terminal distinta a la de minikube tunnel:
-```powershell
-kubectl get services
-```
-
-### 8. Pasar la base de datos a kubernetes 
+### 6. Pasar la base de datos a kubernetes 
 Con el .env ubicado en el servicio:
 ```powershell
+kubectl create configmap auth-config --from-env-file=./auth-service/.env
 kubectl create configmap users-config --from-env-file=./users-service/.env
 kubectl create configmap skills-config --from-env-file=./skills-service/.env
 kubectl create configmap orders-config --from-env-file=./orders-service/.env
 ```
+### 7. Desplegar la Infraestructura (Kubernetes)
+Aplicar los manifiestos YAML para crear los Pods y Servicios:
+```powershell
+kubectl apply -f ./k8s/
+```
+### 8. Verificar que los servicios corran
+```powershell
+kubectl get pods
+kubectl get svc
+kubectl get services
+```
 
-### 9. Probar el Sistema (Usar Postman Agent porque es local la dirección IP)
-Descargar el Postman Agent desde: `https://www.postman.com/downloads/postman-agent/`  
-Para hacer peticiones desde Postman seguir el `Manual_API_restful` en la carpeta de Documentacion.
+### 9. Exponer API Gateway (IMPORTANTE - NUEVA TERMINAL)**
+```powershell
+# ABRIR UNA NUEVA TERMINAL DE POWERSHELL
+
+# Primero, apuntar al Docker de Minikube en la nueva terminal también
+& minikube -p minikube docker-env --shell powershell | Invoke-Expression
+
+# Luego, exponer el servicio (esto crea un túnel local)
+minikube service api-gateway
+```
+La pagina web se abre sola en el navegador.
+```
+# La salida será algo como:
+# |-----------|-------------|-------------|------|
+# | NAMESPACE |    NAME     | TARGET PORT | URL  |
+# |-----------|-------------|-------------|------|
+# | default   | api-gateway |    3000     | http://127.0.0.1:XXXXX |
+# |-----------|-------------|-------------|------|
+
+# DEJAR ESTA TERMINAL ABIERTA (es necesaria para mantener el túnel)
+```

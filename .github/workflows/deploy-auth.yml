@@ -1,0 +1,50 @@
+name: Deploy Auth Service
+
+on:
+  push:
+    paths:
+      - 'auth-service/**'
+    branches:
+      - main
+      - refactor
+
+jobs:
+  # CI: Integración Continua
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'auth-service/package.json'
+
+      - name: Install dependencies
+        run: |
+          cd auth-service
+          npm ci
+
+  # CD: Despliegue Continuo
+  build-and-deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Auth Service Docker Image
+        run: |
+          cd auth-service
+          docker build -t auth-service:latest .         
+
+      - name: Simulated Deployment for Local Minikube
+        run: |
+          echo "Simulando despliegue de imagen auth-service:latest."
+          echo "Para Minikube local ejecutar: kubectl rollout restart deployment auth-deployment"
