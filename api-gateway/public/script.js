@@ -23,7 +23,7 @@ function updateTokenUI() {
     const tokenDisplay = document.getElementById('tokenDisplay');
     const authSection = document.getElementById('authSection');
     const apiSection = document.getElementById('apiSection');
-    
+
     if (authToken) {
         tokenDisplay.textContent = authToken.substring(0, 50) + '...';
         authSection.style.display = 'none';
@@ -80,7 +80,7 @@ async function login() {
             body: JSON.stringify({ username, password })
         });
         const data = await response.json();
-        
+
         if (response.ok && data.data?.token) {
             setToken(data.data.token);
             displayResponse('authResponse', {
@@ -116,10 +116,11 @@ async function loadDropdowns() {
             const usersData = await usersRes.json();
             const users = usersData.data || [];
             const userSelect = document.getElementById('orderUserId');
+            userSelect.innerHTML = '<option value="">-- Seleccionar Usuario --</option>';
             users.forEach(user => {
                 const option = document.createElement('option');
                 option.value = user.id;
-                option.textContent = `${user.id} - ${user.name || user.email}`;
+                option.textContent = `${user.id} - ${user.fname} ${user.lname} (${user.username})`;
                 userSelect.appendChild(option);
             });
         }
@@ -130,10 +131,11 @@ async function loadDropdowns() {
             const skillsData = await skillsRes.json();
             const skills = skillsData.data || [];
             const skillSelect = document.getElementById('orderSkillId');
+            skillSelect.innerHTML = '<option value="">-- Seleccionar Habilidad --</option>';
             skills.forEach(skill => {
                 const option = document.createElement('option');
                 option.value = skill.id;
-                option.textContent = `${skill.id} - ${skill.name} (Nivel ${skill.difficulty_level})`;
+                option.textContent = `${skill.id} - ${skill.name} (${skill.available_pts} pts)`;
                 skillSelect.appendChild(option);
             });
         }
@@ -164,7 +166,7 @@ async function updateStats() {
         }
 
         // Orders count
-        const ordersRes = await fetch(`${API_BASE}/orders`);
+        const ordersRes = await fetch(`${API_BASE}/orders`, { headers: getHeaders() });
         if (ordersRes.ok) {
             const ordersData = await ordersRes.json();
             const orders = ordersData.data || [];
@@ -243,6 +245,27 @@ async function createUser() {
     }
 }
 
+async function deleteUser() {
+    const id = document.getElementById('deleteUserId').value;
+    if (!id) { alert('Por favor ingresa el ID del usuario'); return; }
+
+    displayResponse('usersResponse', {}, 'success', true);
+    try {
+        const response = await fetch(`${API_BASE}/users/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        const data = await response.json();
+        displayResponse('usersResponse', data, response.ok ? 'success' : 'error');
+        if (response.ok) {
+            document.getElementById('deleteUserId').value = '';
+            loadDropdowns();
+        }
+    } catch (error) {
+        displayResponse('usersResponse', { error: error.message }, 'error');
+    }
+}
+
 // SKILLS ENDPOINTS
 async function getAllSkills() {
     displayResponse('skillsResponse', {}, 'success', true);
@@ -279,10 +302,9 @@ async function getSkillById() {
 
 async function createSkill() {
     const name = document.getElementById('skillName').value;
-    const level = document.getElementById('skillLevel').value;
-    const points = document.getElementById('skillPoints').value;
+    const available_pts = document.getElementById('skillAvailablePts').value;
 
-    if (!name || !level || !points) {
+    if (!name || !available_pts) {
         alert('Por favor completa todos los campos');
         return;
     }
@@ -294,8 +316,7 @@ async function createSkill() {
             headers: getHeaders(),
             body: JSON.stringify({
                 name,
-                difficulty_level: parseInt(level),
-                experience_points: parseInt(points)
+                available_pts: parseInt(available_pts)
             })
         });
         const data = await response.json();
@@ -303,8 +324,28 @@ async function createSkill() {
 
         if (response.ok) {
             document.getElementById('skillName').value = '';
-            document.getElementById('skillLevel').value = '';
-            document.getElementById('skillPoints').value = '';
+            document.getElementById('skillAvailablePts').value = '';
+            loadDropdowns();
+        }
+    } catch (error) {
+        displayResponse('skillsResponse', { error: error.message }, 'error');
+    }
+}
+
+async function deleteSkill() {
+    const id = document.getElementById('deleteSkillId').value;
+    if (!id) { alert('Por favor ingresa el ID de la habilidad'); return; }
+
+    displayResponse('skillsResponse', {}, 'success', true);
+    try {
+        const response = await fetch(`${API_BASE}/skills/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        const data = await response.json();
+        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error');
+        if (response.ok) {
+            document.getElementById('deleteSkillId').value = '';
             loadDropdowns();
         }
     } catch (error) {
@@ -349,9 +390,10 @@ async function getOrderById() {
 async function createOrder() {
     const userId = document.getElementById('orderUserId').value;
     const skillId = document.getElementById('orderSkillId').value;
+    const ptsAssigned = document.getElementById('orderPtsAssigned').value;
 
-    if (!userId || !skillId) {
-        alert('Por favor selecciona un usuario y una habilidad');
+    if (!userId || !skillId || !ptsAssigned) {
+        alert('Por favor selecciona un usuario, una habilidad y puntos asignados');
         return;
     }
 
@@ -363,7 +405,7 @@ async function createOrder() {
             body: JSON.stringify({
                 user_id: parseInt(userId),
                 skill_id: parseInt(skillId),
-                quantity: 1
+                pts_assigned: parseInt(ptsAssigned)
             })
         });
         const data = await response.json();
@@ -372,6 +414,28 @@ async function createOrder() {
         if (response.ok) {
             document.getElementById('orderUserId').value = '';
             document.getElementById('orderSkillId').value = '';
+            document.getElementById('orderPtsAssigned').value = '';
+            updateStats();
+        }
+    } catch (error) {
+        displayResponse('ordersResponse', { error: error.message }, 'error');
+    }
+}
+
+async function deleteOrder() {
+    const id = document.getElementById('deleteOrderId').value;
+    if (!id) { alert('Por favor ingresa el ID del pedido'); return; }
+
+    displayResponse('ordersResponse', {}, 'success', true);
+    try {
+        const response = await fetch(`${API_BASE}/orders/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        const data = await response.json();
+        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error');
+        if (response.ok) {
+            document.getElementById('deleteOrderId').value = '';
             updateStats();
         }
     } catch (error) {

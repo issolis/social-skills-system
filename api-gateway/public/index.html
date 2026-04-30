@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,7 +29,7 @@
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
 
@@ -53,13 +54,13 @@
             background: white;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s, box-shadow 0.3s;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
         }
 
         .card h2 {
@@ -82,7 +83,8 @@
             font-size: 13px;
         }
 
-        input, select {
+        input,
+        select {
             width: 100%;
             padding: 8px 10px;
             border: 1px solid #ddd;
@@ -91,7 +93,8 @@
             font-family: inherit;
         }
 
-        input:focus, select:focus {
+        input:focus,
+        select:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -224,8 +227,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .notice {
@@ -254,7 +262,7 @@
             padding: 15px;
             border-radius: 8px;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .stat-box h3 {
@@ -291,6 +299,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -299,7 +308,8 @@
         </header>
 
         <div class="notice">
-            ℹ️ Esta interfaz demuestra la comunicación entre servicios RESTful a través de un API Gateway centralizado en el puerto 3000.
+            ℹ️ Esta interfaz demuestra la comunicación entre servicios RESTful a través de un API Gateway centralizado
+            en el puerto 3000.
         </div>
 
         <!-- AUTH TOKEN DISPLAY -->
@@ -307,7 +317,8 @@
             <h2 style="color: #667eea;">🔐 Estado de Autenticación</h2>
             <div class="form-group">
                 <label>Token Actual:</label>
-                <div style="background: white; padding: 10px; border-radius: 5px; word-break: break-all; font-size: 12px; font-family: monospace;">
+                <div
+                    style="background: white; padding: 10px; border-radius: 5px; word-break: break-all; font-size: 12px; font-family: monospace;">
                     <span id="tokenDisplay">No token</span>
                 </div>
             </div>
@@ -318,7 +329,10 @@
             <div class="card full-width-card">
                 <h2>🔑 Iniciar Sesión</h2>
                 <div class="notice">
-                    Credenciales de prueba: username: test | password: password123
+                    <!-- Credenciales de prueba: username: test | password: password123 -->
+                    Credenciales de prueba:<br>
+                    <strong>Admin:</strong> issolis | Hola12345678!<br>
+                    <strong>Usuario normal:</strong> Toji | Qwertyuiop12!
                 </div>
 
                 <div class="form-group">
@@ -361,147 +375,154 @@
                         <button class="btn-danger" onclick="logout()" style="width: 150px;">Cerrar Sesión</button>
                     </div>
                 </div>
-            <!-- USERS SECTION -->
-            <div class="card">
-                <h2>👥 Gestión de Usuarios</h2>
+                <!-- USERS SECTION -->
+                <div class="card">
+                    <h2>👥 Gestión de Usuarios</h2>
 
-                <div class="form-group">
-                    <label>Listar todos los usuarios</label>
-                    <button onclick="getAllUsers()">Obtener Usuarios</button>
-                </div>
-
-                <div class="form-group">
-                    <label>Buscar usuario por ID</label>
-                    <input type="number" id="userId" placeholder="ID del usuario" min="1">
-                    <button onclick="getUserById()">Buscar</button>
-                </div>
-
-                <div class="form-group">
-                    <label>Crear nuevo usuario</label>
-                      <input type="text" id="newUsername" placeholder="Nombre de usuario (username)">
-                      <input type="text" id="newFname" placeholder="Nombre (fname)" style="margin-top: 8px;">
-                      <input type="text" id="newLname" placeholder="Apellido (lname)" style="margin-top: 8px;">
-                      <input type="password" id="newPassword" placeholder="Contraseña" style="margin-top: 8px;">
-                      <select id="newRole" style="margin-top: 8px; width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                          <option value="2">Usuario Regular (2)</option>
-                          <option value="1">Administrador (1)</option>
-                      </select>
-                      <button onclick="createUser()" style="margin-top: 8px; width: 100%;">Crear Usuario</button>
-                  </div>
-
-                <div class="form-group">
-                    <label>Eliminar usuario</label>
-                    <div class="flex-row">
-                      <input type="text" id="deleteUserId" placeholder="ID del usuario">
-                      <button class="btn-danger" style="margin-left: 8px;" onclick="deleteUser()">Eliminar</button>
+                    <div class="form-group">
+                        <label>Listar todos los usuarios</label>
+                        <button onclick="getAllUsers()">Obtener Usuarios</button>
                     </div>
-                </div>
 
-                <div id="usersResponse" class="response-container"></div>
-            </div>
-
-            <!-- SKILLS SECTION -->
-            <div class="card">
-                <h2>⭐ Gestión de Habilidades</h2>
-
-                <div class="form-group">
-                    <label>Listar todas las habilidades</label>
-                    <button onclick="getAllSkills()">Obtener Habilidades</button>
-                </div>
-
-                <div class="form-group">
-                    <label>Buscar habilidad por ID</label>
-                    <input type="number" id="skillId" placeholder="ID de la habilidad" min="1">
-                    <button onclick="getSkillById()">Buscar</button>
-                </div>
-
-                <div class="form-group">
-                    <label>Crear nueva habilidad</label>
-                    <input type="text" id="skillName" placeholder="Nombre de la habilidad">
-                    <input type="number" id="skillLevel" placeholder="Nivel de dificultad (1-5)" min="1" max="5" style="margin-top: 8px;">
-                    <input type="number" id="skillPoints" placeholder="Puntos de experiencia" min="1" style="margin-top: 8px;">
-                    <button onclick="createSkill()" style="margin-top: 8px;">Crear Habilidad</button>
-                </div>
-
-                <div class="form-group">
-                    <label>Eliminar habilidad</label>
-                    <div class="flex-row">
-                      <input type="text" id="deleteSkillId" placeholder="ID de habilidad">
-                      <button class="btn-danger" style="margin-left: 8px;" onclick="deleteSkill()">Eliminar</button>
+                    <div class="form-group">
+                        <label>Buscar usuario por ID</label>
+                        <input type="number" id="userId" placeholder="ID del usuario" min="1">
+                        <button onclick="getUserById()">Buscar</button>
                     </div>
-                </div>
 
-                <div id="skillsResponse" class="response-container"></div>
-            </div>
-
-            <!-- ORDERS SECTION -->
-            <div class="card">
-                <h2>📦 Gestión de Pedidos</h2>
-
-                <div class="form-group">
-                    <label>Listar todos los pedidos</label>
-                    <button onclick="getAllOrders()">Obtener Pedidos</button>
-                </div>
-
-                <div class="form-group">
-                    <label>Buscar pedido por ID</label>
-                    <input type="number" id="orderId" placeholder="ID del pedido" min="1">
-                    <button onclick="getOrderById()">Buscar</button>
-                </div>
-
-                <div class="form-group">
-                    <label>Crear nuevo pedido</label>
-                    <select id="orderUserId">
-                        <option value="">-- Seleccionar Usuario --</option>
-                    </select>
-                    <select id="orderSkillId" style="margin-top: 8px;">
-                        <option value="">-- Seleccionar Habilidad --</option>
-                    </select>
-                    <button onclick="createOrder()" style="margin-top: 8px;">Crear Pedido</button>
-                </div>
-
-                <div class="form-group">
-                    <label>Eliminar pedido</label>
-                    <div class="flex-row">
-                      <input type="text" id="deleteOrderId" placeholder="ID de pedido">
-                      <button class="btn-danger" style="margin-left: 8px;" onclick="deleteOrder()">Eliminar</button>
+                    <div class="form-group">
+                        <label>Crear nuevo usuario</label>
+                        <input type="text" id="newUsername" placeholder="Nombre de usuario (username)">
+                        <input type="text" id="newFname" placeholder="Nombre (fname)" style="margin-top: 8px;">
+                        <input type="text" id="newLname" placeholder="Apellido (lname)" style="margin-top: 8px;">
+                        <input type="password" id="newPassword" placeholder="Contraseña" style="margin-top: 8px;">
+                        <select id="newRole"
+                            style="margin-top: 8px; width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="2">Usuario Regular (2)</option>
+                            <option value="1">Administrador (1)</option>
+                        </select>
+                        <button onclick="createUser()" style="margin-top: 8px; width: 100%;">Crear Usuario</button>
                     </div>
+
+                    <div class="form-group">
+                        <label>Eliminar usuario</label>
+                        <div class="flex-row">
+                            <input type="text" id="deleteUserId" placeholder="ID del usuario">
+                            <button class="btn-danger" style="margin-left: 8px;"
+                                onclick="deleteUser()">Eliminar</button>
+                        </div>
+                    </div>
+
+                    <div id="usersResponse" class="response-container"></div>
                 </div>
 
-                <div id="ordersResponse" class="response-container"></div>
+                <!-- SKILLS SECTION -->
+                <div class="card">
+                    <h2>⭐ Gestión de Habilidades</h2>
+
+                    <div class="form-group">
+                        <label>Listar todas las habilidades</label>
+                        <button onclick="getAllSkills()">Obtener Habilidades</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Buscar habilidad por ID</label>
+                        <input type="number" id="skillId" placeholder="ID de la habilidad" min="1">
+                        <button onclick="getSkillById()">Buscar</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Crear nueva habilidad</label>
+                        <input type="text" id="skillName" placeholder="Nombre de la habilidad">
+                        <input type="number" id="skillAvailablePts" placeholder="Puntos disponibles" min="1"
+                            style="margin-top: 8px;">
+                        <button onclick="createSkill()" style="margin-top: 8px;">Crear Habilidad</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Eliminar habilidad</label>
+                        <div class="flex-row">
+                            <input type="text" id="deleteSkillId" placeholder="ID de habilidad">
+                            <button class="btn-danger" style="margin-left: 8px;"
+                                onclick="deleteSkill()">Eliminar</button>
+                        </div>
+                    </div>
+
+                    <div id="skillsResponse" class="response-container"></div>
+                </div>
+
+                <!-- ORDERS SECTION -->
+                <div class="card">
+                    <h2>📦 Gestión de Pedidos</h2>
+
+                    <div class="form-group">
+                        <label>Listar todos los pedidos</label>
+                        <button onclick="getAllOrders()">Obtener Pedidos</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Buscar pedido por ID</label>
+                        <input type="number" id="orderId" placeholder="ID del pedido" min="1">
+                        <button onclick="getOrderById()">Buscar</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Crear nuevo pedido</label>
+                        <select id="orderUserId">
+                            <option value="">-- Seleccionar Usuario --</option>
+                        </select>
+                        <select id="orderSkillId" style="margin-top: 8px;">
+                            <option value="">-- Seleccionar Habilidad --</option>
+                        </select>
+                        <input type="number" id="orderPtsAssigned" placeholder="Puntos a asignar" min="1"
+                            style="margin-top: 8px;">
+                        <button onclick="createOrder()" style="margin-top: 8px;">Crear Pedido</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Eliminar pedido</label>
+                        <div class="flex-row">
+                            <input type="text" id="deleteOrderId" placeholder="ID de pedido">
+                            <button class="btn-danger" style="margin-left: 8px;"
+                                onclick="deleteOrder()">Eliminar</button>
+                        </div>
+                    </div>
+
+                    <div id="ordersResponse" class="response-container"></div>
+                </div>
+
+                <!-- USER SKILLS SECTION -->
+                <div class="card">
+                    <h2>🏆 Habilidades de Usuario</h2>
+
+                    <div class="form-group">
+                        <label>Ver habilidades del usuario</label>
+                        <input type="number" id="userSkillsId" placeholder="ID del usuario" min="1">
+                        <button onclick="getUserSkills()">Ver Habilidades</button>
+                    </div>
+
+                    <div id="userSkillsResponse" class="response-container"></div>
+                </div>
+
+                <!-- API INFO SECTION -->
+                <div class="card full-width-card">
+                    <h2>ℹ️ Información de la API</h2>
+
+                    <div class="form-group">
+                        <button onclick="getGatewayHealth()">Health Check</button>
+                    </div>
+
+                    <div class="form-group">
+                        <button onclick="getGatewayInfo()">Información del Gateway</button>
+                    </div>
+
+                    <div id="infoResponse" class="response-container"></div>
+                </div>
             </div>
-
-            <!-- USER SKILLS SECTION -->
-            <div class="card">
-                <h2>🏆 Habilidades de Usuario</h2>
-
-                <div class="form-group">
-                    <label>Ver habilidades del usuario</label>
-                    <input type="number" id="userSkillsId" placeholder="ID del usuario" min="1">
-                    <button onclick="getUserSkills()">Ver Habilidades</button>
-                </div>
-
-                <div id="userSkillsResponse" class="response-container"></div>
-            </div>
-
-            <!-- API INFO SECTION -->
-            <div class="card full-width-card">
-                <h2>ℹ️ Información de la API</h2>
-
-                <div class="form-group">
-                    <button onclick="getGatewayHealth()">Health Check</button>
-                </div>
-
-                <div class="form-group">
-                    <button onclick="getGatewayInfo()">Información del Gateway</button>
-                </div>
-
-                <div id="infoResponse" class="response-container"></div>
-            </div>
-        </div>
         </div>
     </div>
 
     <script src="script.js"></script>
 </body>
+
 </html>
