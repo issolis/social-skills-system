@@ -6,45 +6,64 @@ on:
       - 'auth-service/**'
     branches:
       - main
-      - refactor
 
 jobs:
-  # CI: Integración Continua
+  # ─────────────────────────────────────────
+  # CI: Instalación de dependencias
+  # ─────────────────────────────────────────
   build-and-test:
+    name: Install dependencies
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: 'auth-service/package.json'
+          cache-dependency-path: 'auth-service/package-lock.json'
 
       - name: Install dependencies
-        run: |
-          cd auth-service
-          npm ci
+        working-directory: auth-service
+        run: npm ci
 
-  # CD: Despliegue Continuo
-  build-and-deploy:
+  # ─────────────────────────────────────────
+  # CD: Build de imagen Docker
+  # ─────────────────────────────────────────
+  build-docker:
+    name: Build Docker Image
     needs: build-and-test
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        working-directory: auth-service
+        run: |
+          echo "PORT=${{ secrets.PORT }}" >> .env
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_SSL=${{ secrets.DB_SSL }}" >> .env
+
+      - name: Inject private.pem
+        run: |
+          mkdir -p auth-service/src/config/keys
+          echo "${{ secrets.PRIVATE_KEY }}" > auth-service/src/config/keys/private.pem
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build Auth Service Docker Image
-        run: |
-          cd auth-service
-          docker build -t auth-service:latest .         
-
-      - name: Simulated Deployment for Local Minikube
-        run: |
-          echo "Simulando despliegue de imagen auth-service:latest."
-          echo "Para Minikube local ejecutar: kubectl rollout restart deployment auth-deployment"
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./auth-service
+          push: false
+          tags: auth-service:latest
