@@ -42,7 +42,7 @@ export default class OrderController {
 
     static async create(req, res) {
         try {
-            const data = await OrderService.create(req.body);
+            const data = await OrderService.create(req.body, req.user);
 
             return res.status(201).json({
                 status: "success",

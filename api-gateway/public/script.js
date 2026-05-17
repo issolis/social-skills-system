@@ -23,7 +23,7 @@ function updateTokenUI() {
     const tokenDisplay = document.getElementById('tokenDisplay');
     const authSection = document.getElementById('authSection');
     const apiSection = document.getElementById('apiSection');
-    
+
     if (authToken) {
         tokenDisplay.textContent = authToken.substring(0, 50) + '...';
         authSection.style.display = 'none';
@@ -49,10 +49,16 @@ function formatResponse(data) {
 }
 
 // Utility function to display responses
-function displayResponse(elementId, data, status = 'success', isLoading = false) {
+function displayResponse(elementId, data, status = 'success', isLoading = false, statusCode = null) {
     const element = document.getElementById(elementId);
     const statusClass = isLoading ? 'loading' : status;
-    const statusText = isLoading ? 'Cargando...' : (status === 'error' ? '❌ Error' : '✅ Éxito');
+    let statusText = '';
+    
+    if (isLoading) {
+        statusText = 'Cargando...';
+    } else {
+        statusText = statusCode ? `Código: ${statusCode}` : (status === 'error' ? 'Error' : 'Éxito');
+    }
 
     if (isLoading) {
         element.innerHTML = `<span class="loading-spinner"></span>${statusText}`;
@@ -80,19 +86,19 @@ async function login() {
             body: JSON.stringify({ username, password })
         });
         const data = await response.json();
-        
+
         if (response.ok && data.data?.token) {
             setToken(data.data.token);
             displayResponse('authResponse', {
                 status: 'success',
                 message: 'Logged in successfully',
                 user: data.data.user
-            }, 'success');
+            }, 'success', false, response.status);
             document.getElementById('loginUsername').value = '';
             document.getElementById('loginPassword').value = '';
             loadDropdowns();
         } else {
-            displayResponse('authResponse', data, 'error');
+            displayResponse('authResponse', data, 'error', false, response.status);
         }
     } catch (error) {
         displayResponse('authResponse', { error: error.message }, 'error');
@@ -104,7 +110,7 @@ function logout() {
     displayResponse('authResponse', {
         status: 'success',
         message: 'Logged out successfully'
-    }, 'success');
+    }, 'success', false, 200);
 }
 
 // Load users and skills into dropdowns
@@ -116,10 +122,11 @@ async function loadDropdowns() {
             const usersData = await usersRes.json();
             const users = usersData.data || [];
             const userSelect = document.getElementById('orderUserId');
+            userSelect.innerHTML = '<option value="">-- Seleccionar Usuario --</option>';
             users.forEach(user => {
                 const option = document.createElement('option');
                 option.value = user.id;
-                option.textContent = `${user.id} - ${user.name || user.email}`;
+                option.textContent = `${user.id} - ${user.fname} ${user.lname} (${user.username})`;
                 userSelect.appendChild(option);
             });
         }
@@ -130,10 +137,11 @@ async function loadDropdowns() {
             const skillsData = await skillsRes.json();
             const skills = skillsData.data || [];
             const skillSelect = document.getElementById('orderSkillId');
+            skillSelect.innerHTML = '<option value="">-- Seleccionar Habilidad --</option>';
             skills.forEach(skill => {
                 const option = document.createElement('option');
                 option.value = skill.id;
-                option.textContent = `${skill.id} - ${skill.name} (Nivel ${skill.difficulty_level})`;
+                option.textContent = `${skill.id} - ${skill.name} (${skill.available_pts} pts)`;
                 skillSelect.appendChild(option);
             });
         }
@@ -164,7 +172,7 @@ async function updateStats() {
         }
 
         // Orders count
-        const ordersRes = await fetch(`${API_BASE}/orders`);
+        const ordersRes = await fetch(`${API_BASE}/orders`, { headers: getHeaders() });
         if (ordersRes.ok) {
             const ordersData = await ordersRes.json();
             const orders = ordersData.data || [];
@@ -183,7 +191,7 @@ async function getAllUsers() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('usersResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('usersResponse', data, response.ok ? 'success' : 'error', false, response.status);
         updateStats();
     } catch (error) {
         displayResponse('usersResponse', { error: error.message }, 'error');
@@ -203,7 +211,7 @@ async function getUserById() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('usersResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('usersResponse', data, response.ok ? 'success' : 'error', false, response.status);
     } catch (error) {
         displayResponse('usersResponse', { error: error.message }, 'error');
     }
@@ -229,13 +237,34 @@ async function createUser() {
             body: JSON.stringify({ username, fname, lname, password, role_id })
         });
         const data = await response.json();
-        displayResponse('usersResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('usersResponse', data, response.ok ? 'success' : 'error', false, response.status);
 
         if (response.ok) {
             document.getElementById('newUsername').value = '';
             document.getElementById('newFname').value = '';
             document.getElementById('newLname').value = '';
             document.getElementById('newPassword').value = '';
+            loadDropdowns();
+        }
+    } catch (error) {
+        displayResponse('usersResponse', { error: error.message }, 'error');
+    }
+}
+
+async function deleteUser() {
+    const id = document.getElementById('deleteUserId').value;
+    if (!id) { alert('Por favor ingresa el ID del usuario'); return; }
+
+    displayResponse('usersResponse', {}, 'success', true);
+    try {
+        const response = await fetch(`${API_BASE}/users/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        const data = await response.json();
+        displayResponse('usersResponse', data, response.ok ? 'success' : 'error', false, response.status);
+        if (response.ok) {
+            document.getElementById('deleteUserId').value = '';
             loadDropdowns();
         }
     } catch (error) {
@@ -251,7 +280,7 @@ async function getAllSkills() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error', false, response.status);
         updateStats();
     } catch (error) {
         displayResponse('skillsResponse', { error: error.message }, 'error');
@@ -271,7 +300,7 @@ async function getSkillById() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error', false, response.status);
     } catch (error) {
         displayResponse('skillsResponse', { error: error.message }, 'error');
     }
@@ -279,10 +308,9 @@ async function getSkillById() {
 
 async function createSkill() {
     const name = document.getElementById('skillName').value;
-    const level = document.getElementById('skillLevel').value;
-    const points = document.getElementById('skillPoints').value;
+    const available_pts = document.getElementById('skillAvailablePts').value;
 
-    if (!name || !level || !points) {
+    if (!name || !available_pts) {
         alert('Por favor completa todos los campos');
         return;
     }
@@ -294,17 +322,36 @@ async function createSkill() {
             headers: getHeaders(),
             body: JSON.stringify({
                 name,
-                difficulty_level: parseInt(level),
-                experience_points: parseInt(points)
+                available_pts: parseInt(available_pts)
             })
         });
         const data = await response.json();
-        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error', false, response.status);
 
         if (response.ok) {
             document.getElementById('skillName').value = '';
-            document.getElementById('skillLevel').value = '';
-            document.getElementById('skillPoints').value = '';
+            document.getElementById('skillAvailablePts').value = '';
+            loadDropdowns();
+        }
+    } catch (error) {
+        displayResponse('skillsResponse', { error: error.message }, 'error');
+    }
+}
+
+async function deleteSkill() {
+    const id = document.getElementById('deleteSkillId').value;
+    if (!id) { alert('Por favor ingresa el ID de la habilidad'); return; }
+
+    displayResponse('skillsResponse', {}, 'success', true);
+    try {
+        const response = await fetch(`${API_BASE}/skills/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        const data = await response.json();
+        displayResponse('skillsResponse', data, response.ok ? 'success' : 'error', false, response.status);
+        if (response.ok) {
+            document.getElementById('deleteSkillId').value = '';
             loadDropdowns();
         }
     } catch (error) {
@@ -320,7 +367,7 @@ async function getAllOrders() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error', false, response.status);
         updateStats();
     } catch (error) {
         displayResponse('ordersResponse', { error: error.message }, 'error');
@@ -340,7 +387,7 @@ async function getOrderById() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error', false, response.status);
     } catch (error) {
         displayResponse('ordersResponse', { error: error.message }, 'error');
     }
@@ -349,9 +396,10 @@ async function getOrderById() {
 async function createOrder() {
     const userId = document.getElementById('orderUserId').value;
     const skillId = document.getElementById('orderSkillId').value;
+    const ptsAssigned = document.getElementById('orderPtsAssigned').value;
 
-    if (!userId || !skillId) {
-        alert('Por favor selecciona un usuario y una habilidad');
+    if (!userId || !skillId || !ptsAssigned) {
+        alert('Por favor selecciona un usuario, una habilidad y puntos asignados');
         return;
     }
 
@@ -363,15 +411,37 @@ async function createOrder() {
             body: JSON.stringify({
                 user_id: parseInt(userId),
                 skill_id: parseInt(skillId),
-                quantity: 1
+                pts_assigned: parseInt(ptsAssigned)
             })
         });
         const data = await response.json();
-        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error', false, response.status);
 
         if (response.ok) {
             document.getElementById('orderUserId').value = '';
             document.getElementById('orderSkillId').value = '';
+            document.getElementById('orderPtsAssigned').value = '';
+            updateStats();
+        }
+    } catch (error) {
+        displayResponse('ordersResponse', { error: error.message }, 'error');
+    }
+}
+
+async function deleteOrder() {
+    const id = document.getElementById('deleteOrderId').value;
+    if (!id) { alert('Por favor ingresa el ID del pedido'); return; }
+
+    displayResponse('ordersResponse', {}, 'success', true);
+    try {
+        const response = await fetch(`${API_BASE}/orders/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        const data = await response.json();
+        displayResponse('ordersResponse', data, response.ok ? 'success' : 'error', false, response.status);
+        if (response.ok) {
+            document.getElementById('deleteOrderId').value = '';
             updateStats();
         }
     } catch (error) {
@@ -393,7 +463,7 @@ async function getUserSkills() {
             headers: getHeaders()
         });
         const data = await response.json();
-        displayResponse('userSkillsResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('userSkillsResponse', data, response.ok ? 'success' : 'error', false, response.status);
     } catch (error) {
         displayResponse('userSkillsResponse', { error: error.message }, 'error');
     }
@@ -405,7 +475,7 @@ async function getGatewayHealth() {
     try {
         const response = await fetch('/health');
         const data = await response.json();
-        displayResponse('infoResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('infoResponse', data, response.ok ? 'success' : 'error', false, response.status);
     } catch (error) {
         displayResponse('infoResponse', { error: error.message }, 'error');
     }
@@ -416,7 +486,7 @@ async function getGatewayInfo() {
     try {
         const response = await fetch(`${API_BASE}`);
         const data = await response.json();
-        displayResponse('infoResponse', data, response.ok ? 'success' : 'error');
+        displayResponse('infoResponse', data, response.ok ? 'success' : 'error', false, response.status);
     } catch (error) {
         displayResponse('infoResponse', { error: error.message }, 'error');
     }

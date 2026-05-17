@@ -30,7 +30,7 @@ export default class OrderService {
         return order;
     }
 
-    static async create(data) {
+    static async create(data, userToken) {
         const { user_id, skill_id, pts_assigned } = data;
 
         const headers = await authHeaders();
@@ -90,7 +90,19 @@ export default class OrderService {
                 throw error;
             }
 
-            return await OrderModel.create({ user_id, skill_id, pts_assigned, status: "completed" });
+            const newOrder = await OrderModel.create({ user_id, skill_id, pts_assigned, status: "completed" });
+
+            // Mock Event Broker Emission - Integracion EDA
+            const authUserId = userToken?.id || user_id;
+            const eventPayload = {
+                event: "pedido.creado",
+                data: newOrder,
+                user_id: authUserId,
+                issued_by: "auth-service"
+            };
+            console.log(`[EventBroker Mock] Emitting event pedido.creado:`, JSON.stringify(eventPayload));
+
+            return newOrder;
 
         } catch (error) {
             if (pointsDecreased) {

@@ -20,6 +20,8 @@ spec:
         - containerPort: 3003
         env:
         # VARIABLES CLAVE PARA LA COMUNICACIÓN ENTRE KUBERNETES DNS
+        - name: AUTH_SERVICE_URL
+          value: "http://auth-service:3004"
         - name: USERS_SERVICE_URL
           value: "http://users-service:3001"
         - name: SKILLS_SERVICE_URL
